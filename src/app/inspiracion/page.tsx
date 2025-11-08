@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function InspiracionPage() {
   return (
     <div className="container mx-auto px-4 py-16">
@@ -5,105 +7,155 @@ export default function InspiracionPage() {
         Inspiración
       </h1>
 
-      <div className="max-w-4xl mx-auto space-y-8">
-        <section className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">
-            El Arte de Nuestras Raíces
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Lo que nos inspira */}
+        <section className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+          <h2 className="text-3xl font-bold mb-6 text-primary">
+            Lo que nos Inspira
           </h2>
-          <p className="text-lg text-gray-700 leading-relaxed mb-4">
-            Cada artesanía que ofrecemos nace de las manos expertas de artesanos
-            que han heredado conocimientos ancestrales. Estas técnicas se han
-            perfeccionado a lo largo de generaciones, y cada pieza refleja no solo
-            habilidad, sino también el alma de nuestra cultura.
-          </p>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            Desde las fibras naturales de la caña flecha hasta los vibrantes
-            colores de las mochilas wayuu, cada material cuenta su propia historia
-            y conecta con la tierra colombiana.
-          </p>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Nuestras piezas nacen de algo más que técnica: nacen de memorias, de paisajes,
+                de voces antiguas que aún susurran en cada tejido. Esta es la inspiración que 
+                nos guía y que queremos compartir contigo.
+              </p>
+            </div>
+            <div className="relative h-80 rounded-xl overflow-hidden shadow-lg">
+              <Image
+                src="/assets/assets11/artesana-tejiendo-mochila2.webp"
+                alt="Artesana tejiendo mochila"
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
         </section>
 
-        <section className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">
-            Tradiciones que Perduran
+        {/* Fragmentos de Sabiduría - Voces entre hilos */}
+        <section className="bg-gradient-to-br from-primary/10 to-accent/20 rounded-xl shadow-lg p-8 md:p-12">
+          <h2 className="text-3xl font-bold mb-6 text-primary text-center">
+            Fragmentos de Sabiduría
           </h2>
+          <h3 className="text-2xl font-semibold mb-8 text-secondary text-center">
+            Voces entre Hilos
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
+              <Image
+                src="/assets/assets11/colores.webp"
+                alt="Colores artesanales"
+                fill
+                className="object-cover"
+              />
+            </div>
+            
+            <div className="space-y-4">
+              <blockquote className="text-xl italic text-gray-700 border-l-4 border-primary pl-4 py-2">
+                "Cada hilo tiene su origen."
+              </blockquote>
+              <blockquote className="text-xl italic text-gray-700 border-l-4 border-secondary pl-4 py-2">
+                "El arte popular no se copia, se hereda."
+              </blockquote>
+              <blockquote className="text-xl italic text-gray-700 border-l-4 border-primary pl-4 py-2">
+                "No es solo crear, es recordar."
+              </blockquote>
+              <blockquote className="text-xl italic text-gray-700 border-l-4 border-secondary pl-4 py-2">
+                "Nada que se haga con las manos está vacío."
+              </blockquote>
+              <blockquote className="text-xl italic text-gray-700 border-l-4 border-primary pl-4 py-2">
+                "Lo que se teje con el alma nunca se deshace."
+              </blockquote>
+            </div>
+          </div>
+        </section>
+
+        {/* Historias que Inspiran */}
+        <section className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+          <h2 className="text-3xl font-bold mb-6 text-primary text-center">
+            Historias que Inspiran
+          </h2>
+          <h3 className="text-2xl font-semibold mb-6 text-secondary text-center">
+            El Legado entre sus Manos
+          </h3>
+          
           <div className="space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold mb-2 text-secondary">
-                Sombrero Vueltiao
-              </h3>
-              <p className="text-gray-700">
-                Símbolo cultural de Colombia, el sombrero vueltiao es tejido con
-                fibra de caña flecha por las comunidades Zenú. Cada sombrero puede
-                tomar días o semanas en completarse, dependiendo de la cantidad de
-                vueltas y la complejidad del diseño.
-              </p>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              Desde que tengo uso de razón, recuerdo a mi abuela con las manos 
+              ocupadas en el arte: tejiendo hamacas, mochilas y memorias. Nunca 
+              necesitó patrones, solo su intuición y los recuerdos de quienes 
+              le enseñaron antes.
+            </p>
+
+            <div className="relative h-96 rounded-xl overflow-hidden shadow-lg my-8">
+              <Image
+                src="/assets/assets11/tejedora-hamacas.webp"
+                alt="Tejedora de hamacas"
+                fill
+                className="object-cover"
+              />
             </div>
 
-            <div>
-              <h3 className="text-xl font-semibold mb-2 text-secondary">
-                Mochilas Wayuu
-              </h3>
-              <p className="text-gray-700">
-                Las mochilas wayuu son creadas por las mujeres de la comunidad
-                Wayuu en La Guajira. Cada mochila es única y puede tomar hasta un
-                mes en tejerse, con diseños que representan la cosmovisión y las
-                historias de su pueblo.
-              </p>
-            </div>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              Sus dedos sabían exactamente qué hacer, cómo anudar sin errores, cómo elegir los colores
+              que hablaban del campo, del cielo o del amor. Yo la miraba en silencio, sin saber que 
+              esas imágenes se quedarían conmigo para siempre.
+            </p>
 
-            <div>
-              <h3 className="text-xl font-semibold mb-2 text-secondary">
-                Hamacas Artesanales
-              </h3>
-              <p className="text-gray-700">
-                Las hamacas y sillas hamaca son parte integral de la vida
-                cotidiana en las regiones cálidas de Colombia. Tejidas con
-                técnicas tradicionales, combinan comodidad con belleza artesanal.
+            <div className="bg-primary/5 border-l-4 border-primary p-6 rounded-r-lg">
+              <p className="text-lg text-gray-700 leading-relaxed italic">
+                Ahora entiendo que no era solo tejido. Era resistencia, era ternura, era pertenencia. 
+                Y hoy, con esta tienda, intento honrar su legado. Cada pieza es una forma de decir:
+                <strong className="text-primary"> "Aquí estoy, abuela, siguiendo tu hilo."</strong>
               </p>
             </div>
           </div>
         </section>
 
-        <section className="bg-gradient-to-r from-primary to-secondary text-white rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold mb-4">
-            Cada Compra, Una Historia
+        {/* Postales de Raíz */}
+        <section className="bg-white rounded-xl shadow-lg p-8 md:p-12">
+          <h2 className="text-3xl font-bold mb-6 text-primary text-center">
+            Postales de Raíz
           </h2>
-          <p className="text-lg leading-relaxed mb-4">
-            Al adquirir una de nuestras artesanías, no solo llevas a casa un
-            producto hermoso y de calidad, sino que también te conviertes en parte
-            de una cadena de preservación cultural que se extiende por
-            generaciones.
-          </p>
-          <p className="text-lg leading-relaxed">
-            Cada hilo, cada fibra, cada nudo, lleva consigo el latido ancestral de
-            nuestra tierra y nuestra gente.
-          </p>
+          <h3 className="text-2xl font-semibold mb-6 text-secondary text-center">
+            Memorias que Hablan con el Alma
+          </h3>
+          
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="relative h-96 rounded-xl overflow-hidden shadow-lg">
+              <Image
+                src="/assets/assets11/atardecer.webp"
+                alt="Atardecer inspirador"
+                fill
+                className="object-cover"
+              />
+            </div>
+            
+            <div className="space-y-6">
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Nos inspiran los colores del atardecer, las texturas de la tierra y los sonidos de los
+                telares en movimiento. Todo lo que nos rodea tiene algo que contar, y nosotros intentamos
+                escucharlo.
+              </p>
+              
+              <p className="text-lg text-gray-700 leading-relaxed">
+                El paisaje nos enseña los tonos del alma, y las manos los convierten en forma. 
+                Cada pieza es un fragmento de esa conversación entre la tierra y el corazón.
+              </p>
+            </div>
+          </div>
         </section>
 
-        <section className="bg-white rounded-xl shadow-lg p-8">
-          <h2 className="text-3xl font-bold mb-4 text-primary">
-            Materiales Naturales
+        {/* Cierre Inspirador */}
+        <section className="bg-gradient-to-r from-primary to-secondary text-white rounded-xl shadow-lg p-8 md:p-12 text-center">
+          <h2 className="text-3xl font-bold mb-6">
+            Tejemos con el Corazón
           </h2>
-          <p className="text-lg text-gray-700 leading-relaxed mb-4">
-            Nuestros artesanos trabajan con materiales que provienen directamente
-            de la naturaleza:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 text-lg">
-            <li>Caña flecha: Fibra natural utilizada para los sombreros vueltiaos</li>
-            <li>Algodón: Base para las coloridas mochilas wayuu</li>
-            <li>Fique: Fibra resistente para hamacas y productos duraderos</li>
-            <li>Tintes naturales: Colores extraídos de plantas y minerales</li>
-          </ul>
-        </section>
-
-        <section className="text-center py-8">
-          <h2 className="text-3xl font-bold mb-4 text-dark">
-            Déjate Inspirar por la Tradición
-          </h2>
-          <p className="text-lg text-gray-700 mb-6 max-w-2xl mx-auto">
-            Explora nuestra colección y encuentra la pieza que resuene con tu
-            espíritu. Cada artesanía espera contar su historia.
+          <p className="text-lg leading-relaxed max-w-3xl mx-auto">
+            Cada artesanía que ofrecemos lleva consigo la inspiración de generaciones, 
+            el amor por la tradición y la esperanza de que estas historias sigan vivas 
+            en cada hogar que las acoge.
           </p>
         </section>
       </div>
