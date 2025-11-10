@@ -5,6 +5,7 @@ import { CartItem, Product, ProductVariant } from '@/types';
 interface CartStore {
   items: CartItem[];
   addItem: (product: Product, quantity: number, variant?: ProductVariant) => void;
+  addToCart: (product: Product) => void; // 👈 agregado para compatibilidad
   removeItem: (productId: string, variantId?: string) => void;
   updateQuantity: (productId: string, quantity: number, variantId?: string) => void;
   clearCart: () => void;
@@ -33,6 +34,11 @@ export const useCartStore = create<CartStore>()(
 
           return { items: [...state.items, { product, quantity, variant }] };
         });
+      },
+
+      // 👇 Nuevo método para que tu ProductCard funcione
+      addToCart: (product) => {
+        get().addItem(product, 1);
       },
 
       removeItem: (productId, variantId) => {

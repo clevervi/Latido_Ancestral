@@ -1,51 +1,37 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { Product } from '@/types';
 
 interface WishlistStore {
-  items: string[]; // IDs de productos
-  addItem: (productId: string) => void;
-  removeItem: (productId: string) => void;
-  toggleItem: (productId: string) => void;
+  wishlist: Product[];
+  toggleWishlist: (product: Product) => void;
   isInWishlist: (productId: string) => boolean;
-  clearWishlist: () => void;
 }
 
 export const useWishlistStore = create<WishlistStore>()(
   persist(
     (set, get) => ({
-      items: [],
+      wishlist: [],
 
-      addItem: (productId) => {
-        set((state) => {
-          if (state.items.includes(productId)) return state;
-          return { items: [...state.items, productId] };
-        });
-      },
-
-      removeItem: (productId) => {
-        set((state) => ({
-          items: state.items.filter((id) => id !== productId),
-        }));
-      },
-
-      toggleItem: (productId) => {
-        const { isInWishlist, addItem, removeItem } = get();
-        if (isInWishlist(productId)) {
-          removeItem(productId);
+      toggleWishlist: (product) => {
+        const exists = get().wishlist.find((item) => item.id === product.id);
+        if (exists) {
+          set({
+            wishlist: get().wishlist.filter((item) => item.id !== product.id),
+          });
         } else {
-          addItem(productId);
+          set({
+            wishlist: [...get().wishlist, product],
+          });
         }
       },
 
-      isInWishlist: (productId) => {
-        return get().items.includes(productId);
-      },
-
-      clearWishlist: () => set({ items: [] }),
+      isInWishlist: (productId) =>
+        get().wishlist.some((item) => item.id === productId),
     }),
     {
-      name: 'wishlist-storage',
-      skipHydration: true,
+      name: 'wishlist-storage', // nombre de la key en localStorage
+      skipHydration: true,      // 👈 igual que en tu cartStore
     }
   )
 );
