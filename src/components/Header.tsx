@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { FaShoppingCart, FaHeart, FaUser } from 'react-icons/fa';
+import ThemeToggle from './ThemeToggle';
+import LanguageCurrencySelector from './LanguageCurrencySelector';
+import { useCartStore } from '@/store/cartStore';
+import { useWishlistStore } from '@/store/wishlistStore';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { items } = useCartStore();
+  const { items: wishlistItems } = useWishlistStore();
+  
+  const cartItemsCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
     <header className="bg-primary text-white shadow-lg sticky top-0 z-50">
@@ -15,7 +24,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Menu */}
-          <ul className="hidden md:flex space-x-8">
+          <ul className="hidden lg:flex space-x-6 items-center">
             <li>
               <Link href="/" className="hover:text-accent transition-colors">
                 Inicio
@@ -43,10 +52,10 @@ export default function Header() {
             </li>
           </ul>
 
-          {/* Mobile Menu Button */}
+          {/* Right Side Actions */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="md:hidden focus:outline-none"
+            className="lg:hidden focus:outline-none"
             aria-label="Toggle menu"
           >
             <svg
@@ -69,7 +78,8 @@ export default function Header() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <ul className="md:hidden mt-4 space-y-2 pb-4">
+          <div className="lg:hidden mt-4 pb-4 space-y-4">
+            <ul className="space-y-2">
             <li>
               <Link
                 href="/"
@@ -115,7 +125,39 @@ export default function Header() {
                 Contacto
               </Link>
             </li>
-          </ul>
+            </ul>
+            
+            {/* Mobile Actions */}
+            <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/20">
+              <div className="flex items-center gap-3">
+                <Link href="/wishlist" className="relative p-2 hover:text-accent">
+                  <FaHeart size={18} />
+                  {wishlistItems.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {wishlistItems.length}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/carrito" className="relative p-2 hover:text-accent">
+                  <FaShoppingCart size={18} />
+                  {cartItemsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {cartItemsCount}
+                    </span>
+                  )}
+                </Link>
+                <Link href="/perfil" className="p-2 hover:text-accent">
+                  <FaUser size={18} />
+                </Link>
+              </div>
+              <ThemeToggle />
+            </div>
+            
+            {/* Mobile Language/Currency - Simplified */}
+            <div className="pt-2">
+              <LanguageCurrencySelector />
+            </div>
+          </div>
         )}
       </nav>
     </header>

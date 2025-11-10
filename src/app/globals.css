@@ -1,16 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #8B4513;
-  --color-secondary: #D2691E;
-  --color-accent: #F4A460;
-  --color-dark: #2C1810;
+  /* Colores originales - tonos tierra */
+  --color-primary: #8B4513;      /* Marrón silla */
+  --color-secondary: #D2691E;    /* Chocolate */
+  --color-accent: #F4A460;       /* Sandy brown */
+  --color-dark: #2C1810;         /* Marrón oscuro */
+  
+  /* Colores adicionales - paleta tierra */
+  --color-wheat: #F5DEB3;        /* Trigo */
+  --color-cornsilk: #FFF8DC;     /* Maíz suave */
+  --color-antiquewhite: #FAEBD7; /* Blanco antiguo */
+  --color-moccasin: #FFE4B5;     /* Mocasín */
+  
+  /* Dark mode colors */
+  --color-dark-bg: #1a1a1a;      /* Fondo principal */
+  --color-dark-surface: #2d2d2d; /* Superficies */
+  --color-dark-text: #e5e5e5;    /* Texto principal */
+  --color-dark-brown: #3D2817;   /* Marrón oscuro 1 */
+  --color-dark-brown-2: #4A3426; /* Marrón oscuro 2 */
+  --color-dark-brown-3: #5C3D2E; /* Marrón oscuro 3 */
+  --color-dark-brown-4: #362415; /* Marrón oscuro 4 */
 }
 
+/* Light mode (default) */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background: #FFF8F0;
   color: var(--color-dark);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode */
+.dark body {
+  background: var(--color-dark-bg);
+  color: var(--color-dark-text);
 }
 
 .btn-primary {
@@ -50,4 +74,65 @@ body {
 
 .card:hover {
   transform: scale(1.05);
+}
+
+.dark .card {
+  background-color: var(--color-dark-surface);
+}
+
+/* Animaciones */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s ease-out;
+}
+
+.animate-progress {
+  animation: progress 5s linear;
 }

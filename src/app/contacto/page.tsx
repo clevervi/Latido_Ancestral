@@ -57,7 +57,7 @@ export default function ContactoPage() {
                 <h3 className="font-semibold text-lg text-secondary mb-2">
                   Ubicación
                 </h3>
-                <p className="text-gray-700">Clan Malecón, Colombia</p>
+                <p className="text-gray-700">Colombia</p>
               </div>
 
               <div>

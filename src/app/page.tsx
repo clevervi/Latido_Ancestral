@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
+import NewsletterSection from "@/components/NewsletterSection";
 import { products, categories } from "@/data/products";
 
 export default function Home() {
@@ -109,6 +110,9 @@ export default function Home() {
           </Link>
         </div>
       </section>
+      
+      {/* Newsletter Section */}
+      <NewsletterSection />
     </div>
   );
 }
