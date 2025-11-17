@@ -1,109 +1,73 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { products } from '@/data/products';
+import { listActiveProducts, listProductsByVendor, createProduct } from '@/lib/repositories/productRepository';
+import { requireAdminOrVendor } from '@/lib/guards';
 
-// GET /api/products - Get all products with optional filters
+// GET /api/products - List products (public). Optional vendorId filter.
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const category = searchParams.get('category');
-    const minPrice = searchParams.get('minPrice');
-    const maxPrice = searchParams.get('maxPrice');
-    const search = searchParams.get('search');
-    const featured = searchParams.get('featured');
-    const sortBy = searchParams.get('sortBy');
-    const limit = searchParams.get('limit');
+    const vendorId = searchParams.get('vendorId');
 
-    let filteredProducts = [...products];
-
-    // Filter by category
-    if (category) {
-      filteredProducts = filteredProducts.filter(p => p.category === category);
+    if (vendorId) {
+      const products = await listProductsByVendor(vendorId);
+      return NextResponse.json({ success: true, count: products.length, data: products });
     }
 
-    // Filter by price range
-    if (minPrice) {
-      filteredProducts = filteredProducts.filter(p => p.price >= parseFloat(minPrice));
-    }
-    if (maxPrice) {
-      filteredProducts = filteredProducts.filter(p => p.price <= parseFloat(maxPrice));
-    }
-
-    // Filter by search term
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredProducts = filteredProducts.filter(p => 
-        p.name.toLowerCase().includes(searchLower) ||
-        p.description.toLowerCase().includes(searchLower) ||
-        p.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-      );
-    }
-
-    // Filter by featured
-    if (featured === 'true') {
-      filteredProducts = filteredProducts.filter(p => p.featured);
-    }
-
-    // Sort products
-    if (sortBy) {
-      switch (sortBy) {
-        case 'price_asc':
-          filteredProducts.sort((a, b) => a.price - b.price);
-          break;
-        case 'price_desc':
-          filteredProducts.sort((a, b) => b.price - a.price);
-          break;
-        case 'name_asc':
-          filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-          break;
-        case 'name_desc':
-          filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
-          break;
-        case 'rating':
-          filteredProducts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-          break;
-      }
-    }
-
-    // Limit results
-    if (limit) {
-      filteredProducts = filteredProducts.slice(0, parseInt(limit));
-    }
-
-    return NextResponse.json({
-      success: true,
-      count: filteredProducts.length,
-      data: filteredProducts
-    });
+    const products = await listActiveProducts();
+    return NextResponse.json({ success: true, count: products.length, data: products });
   } catch (error) {
+    console.error('Failed to fetch products:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch products' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-// POST /api/products - Create new product (admin only - placeholder)
+// POST /api/products - Create product (admin or vendor)
 export async function POST(request: NextRequest) {
+  const auth = await requireAdminOrVendor(request);
+  if (!auth.ok) return auth.response;
+
+  const user = auth.user;
+
   try {
     const body = await request.json();
+    const { name, slug, description, shortDescription, price, stock, featured, vendorId, categoryId } = body;
 
-    // TODO: Add authentication check
-    // TODO: Add validation
-    // TODO: Add to database
+    if (!name || !slug || !description || typeof price !== 'number') {
+      return NextResponse.json(
+        { success: false, error: 'name, slug, description and numeric price are required' },
+        { status: 400 },
+      );
+    }
 
-    // Placeholder response
-    return NextResponse.json(
-      { 
-        success: true, 
-        message: 'Product creation endpoint - To be implemented with database',
-        data: body
-      },
-      { status: 201 }
-    );
+    // Admin puede crear para cualquier vendor; vendor solo para el suyo
+    let effectiveVendorId: string | null = null;
+    if (user.role === 'vendor') {
+      effectiveVendorId = user.vendorId ?? null;
+    } else if (user.role === 'admin') {
+      effectiveVendorId = vendorId ?? null;
+    }
+
+    const product = await createProduct({
+      name,
+      slug,
+      description,
+      shortDescription,
+      price,
+      stock,
+      featured,
+      vendorId: effectiveVendorId,
+      categoryId,
+    });
+
+    return NextResponse.json({ success: true, data: product }, { status: 201 });
   } catch (error) {
+    console.error('Failed to create product:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create product' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
