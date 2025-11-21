@@ -217,3 +217,4 @@ export const logout = async (
     });
   }
 };
+// Authentication improvements
