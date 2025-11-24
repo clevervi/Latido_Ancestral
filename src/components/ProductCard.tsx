@@ -252,3 +252,4 @@ export default function ProductCard({
     </div>
   );
 }
+// Product card improvements
