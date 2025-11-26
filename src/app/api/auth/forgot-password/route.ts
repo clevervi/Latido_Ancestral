@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createResetToken, users } from '@/lib/auth-storage';
+import { createResetToken, getUserByEmail } from '@/lib/auth-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verificar si el usuario existe
-    const userExists = users.has(email);
+    // Verificar si el usuario existe (en almacenamiento simulado)
+    const userExists = !!getUserByEmail(email);
 
     if (!userExists) {
       // Responder igual para no revelar si el email existe
