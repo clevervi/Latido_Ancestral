@@ -192,3 +192,4 @@ export const deleteProduct = async (
     });
   }
 };
+// Product API enhancements
