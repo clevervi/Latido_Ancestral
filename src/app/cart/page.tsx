@@ -202,3 +202,4 @@ export default function CarritoPage() {
     </div>
   );
 }
+// Cart experience enhancements
