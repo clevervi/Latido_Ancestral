@@ -164,3 +164,4 @@ export const es = {
 };
 
 export type Translations = typeof es;
+// i18n improvements
