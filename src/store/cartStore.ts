@@ -150,3 +150,4 @@ export const useCartStore = create<CartStore>()(
     }
   )
 );
+// Store optimizations
