@@ -1,57 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { pool } from '../../../../../database/db';
+import { getAuthUser } from '@/lib/auth';
+import { findUserByIdForAuth } from '@/lib/repositories/userRepository';
 
 export async function GET(request: NextRequest) {
   try {
-    const userCookie = request.cookies.get('user')?.value;
+    const tokenUser = getAuthUser(request);
 
-    if (!userCookie) {
+    if (!tokenUser) {
       return NextResponse.json(
-        { message: 'Not authenticated' },
-        { status: 401 }
+        { message: 'Unauthorized' },
+        { status: 401 },
       );
     }
 
-    let userData;
-    try {
-      userData = JSON.parse(userCookie);
-    } catch {
-      return NextResponse.json(
-        { message: 'Invalid session' },
-        { status: 401 }
-      );
-    }
+    const user = await findUserByIdForAuth(tokenUser.sub);
 
-    // Get full user data from database
-    const result = await pool.query(
-      'SELECT id, email, first_name, last_name, role, is_active, email_verified FROM usuarios WHERE id = $1',
-      [userData.id]
-    );
-
-    if (result.rows.length === 0) {
+    if (!user) {
       return NextResponse.json(
         { message: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
-
-    const user = result.rows[0];
 
     return NextResponse.json({
       user: {
         id: user.id,
         email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
         name: `${user.first_name} ${user.last_name}`,
         role: user.role,
         isActive: user.is_active,
-        emailVerified: user.email_verified
-      }
+      },
     });
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

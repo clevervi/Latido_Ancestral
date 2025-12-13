@@ -1,79 +1,56 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { products } from '@/data/products';
+import { findProductById, softDeleteProduct } from '@/lib/repositories/productRepository';
+import { requireAdmin } from '@/lib/guards';
 
 // GET /api/products/[id] - Get single product by ID
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  _request: NextRequest,
+  context: { params: Promise<{ id: string }> },
 ) {
   const { id } = await context.params;
   try {
-    const product = products.find(p => p.id === id);
+    const product = await findProductById(id);
 
     if (!product) {
       return NextResponse.json(
         { success: false, error: 'Product not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     return NextResponse.json({
       success: true,
-      data: product
+      data: product,
     });
   } catch (error) {
+    console.error('Failed to fetch product:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch product' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
-// PUT /api/products/[id] - Update product (admin only - placeholder)
-export async function PUT(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const { id } = await context.params;
-  try {
-    const body = await request.json();
-
-    // TODO: Add authentication check
-    // TODO: Add validation
-    // TODO: Update in database
-
-    return NextResponse.json({
-      success: true,
-      message: 'Product update endpoint - To be implemented with database',
-      data: { id, ...body }
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to update product' },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE /api/products/[id] - Delete product (admin only - placeholder)
+// DELETE /api/products/[id] - Soft delete product (admin only)
 export async function DELETE(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireAdmin(request);
+  if (!auth.ok) return auth.response;
+
   const { id } = await context.params;
   try {
-    // TODO: Add authentication check
-    // TODO: Delete from database
-
+    await softDeleteProduct(id);
     return NextResponse.json({
       success: true,
-      message: 'Product deletion endpoint - To be implemented with database',
-      deletedId: id
+      deletedId: id,
     });
   } catch (error) {
+    console.error('Failed to delete product:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to delete product' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
