@@ -1,119 +1,133 @@
 import { NextRequest, NextResponse } from 'next/server';
-import bcryptjs from 'bcryptjs';
-
-// Almacenamiento temporal de usuarios (en producción usar una BD)
-let registeredUsers: any[] = [
-  {
-    id: '1',
-    email: 'admin@latido.com',
-    passwordHash: '$2b$10$fx5UYY5n6rbwxSLad.E5BuN1gjrFePoYxirQ6Uxvpr5hYPWjhZwBa',
-    firstName: 'Admin',
-    lastName: 'User',
-    role: 'admin',
-    isActive: true
-  }
-];
+import { setAuthCookie, hashPassword } from '@/lib/auth';
+import { createSupabaseServiceClient } from '@/lib/supabaseClient';
+import { findUserByEmailForAuth, findUserByIdForAuth } from '@/lib/repositories/userRepository';
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password, confirmPassword, firstName, lastName } = await request.json();
+    const { email, password, firstName, lastName, phone } = await request.json();
 
-    // Aceptar tanto 'name' como 'firstName' y 'lastName'
-    let first = firstName || '';
-    let last = lastName || '';
-    
-    if (!first && !last && name) {
-      // Si solo viene 'name', dividirlo
-      const nameParts = name.trim().split(' ');
-      first = nameParts[0];
-      last = nameParts.slice(1).join(' ') || 'User';
-    }
-
-    if (!email || !password) {
+    if (!email || !password || !firstName || !lastName) {
       return NextResponse.json(
-        { message: 'Email and password are required' },
-        { status: 400 }
+        { message: 'Email, password, first name and last name are required' },
+        { status: 400 },
       );
     }
 
-    if (!first) {
+    if (typeof password !== 'string' || password.length < 6) {
       return NextResponse.json(
-        { message: 'First name is required' },
-        { status: 400 }
+        { message: 'Password must be at least 6 characters long' },
+        { status: 400 },
       );
     }
 
-    if (password !== confirmPassword) {
+    // Comprobar si ya existe en nuestra tabla de usuarios (por compatibilidad)
+    const existing = await findUserByEmailForAuth(email);
+    if (existing) {
       return NextResponse.json(
-        { message: 'Passwords do not match' },
-        { status: 400 }
+        { message: 'Email is already registered' },
+        { status: 409 },
       );
     }
 
-    if (password.length < 6) {
-      return NextResponse.json(
-        { message: 'Password must be at least 6 characters' },
-        { status: 400 }
-      );
-    }
+    const supabase = createSupabaseServiceClient();
 
-    // Verificar si el usuario ya existe
-    if (registeredUsers.find(u => u.email === email)) {
-      return NextResponse.json(
-        { message: 'Email already registered' },
-        { status: 409 }
-      );
-    }
+    // Creamos también un hash local de la contraseña para cumplir con el NOT NULL
+    // de la columna password_hash en la tabla usuarios. La verificación real la hace
+    // Supabase Auth, pero mantenemos este campo por compatibilidad.
+    const passwordHash = await hashPassword(password);
 
-    // Hash password
-    const passwordHash = await bcryptjs.hash(password, 10);
-
-    // Crear nuevo usuario
-    const newUser = {
-      id: String(Date.now()),
+    // Crear el usuario en Supabase Auth (email/password)
+    const { data: signUpData, error: signUpError } = await supabase.auth.admin.createUser({
       email,
-      passwordHash,
-      firstName: first,
-      lastName: last || 'User',
-      role: 'customer',
-      isActive: true
-    };
+      password,
+      email_confirm: true,
+    });
 
-    // Agregar a la lista de usuarios (en producción guardar en BD)
-    registeredUsers.push(newUser);
+    if (signUpError || !signUpData.user) {
+      // Si el proveedor indica que el email ya existe, devolvemos 409 de forma clara.
+      const code = (signUpError as any)?.code;
+      const status = (signUpError as any)?.status;
 
-    // Create response with cookie
+      if (code === 'email_exists' || status === 422) {
+        return NextResponse.json(
+          { message: 'This email is already registered. Please sign in instead.' },
+          { status: 409 },
+        );
+      }
+
+      console.error('Supabase signUp error:', signUpError);
+      return NextResponse.json(
+        { message: 'Failed to create account in auth provider' },
+        { status: 500 },
+      );
+    }
+
+    const authUser = signUpData.user;
+    const userId = authUser.id as string;
+
+    // Insertar fila correspondiente en nuestra tabla usuarios usando el mismo UUID
+    const insertResult = await supabase
+      .from('usuarios')
+      .insert({
+        id: userId,
+        email,
+        password_hash: passwordHash,
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone ?? null,
+        role: 'customer',
+        is_active: true,
+        status: 'active',
+        email_verified: true,
+      })
+      .select('*')
+      .single();
+
+    if (insertResult.error) {
+      console.error('Error inserting user row:', insertResult.error);
+      return NextResponse.json(
+        { message: 'Failed to create user profile' },
+        { status: 500 },
+      );
+    }
+
+    // Leer el usuario recién creado con el helper para mantener el mismo shape/tipos
+    const user = await findUserByIdForAuth(userId);
+
+    if (!user) {
+      return NextResponse.json(
+        { message: 'User profile not found after creation' },
+        { status: 500 },
+      );
+    }
+
     const response = NextResponse.json({
       success: true,
       user: {
-        id: newUser.id,
-        email: newUser.email,
-        name: `${newUser.firstName} ${newUser.lastName}`,
-        role: newUser.role,
+        id: user.id,
+        email: user.email,
+        firstName: user.first_name,
+        lastName: user.last_name,
+        role: user.role,
       },
-      message: 'Registration successful'
+      message: 'Account created successfully',
     }, { status: 201 });
 
-    // Set session cookie
-    response.cookies.set('user', JSON.stringify({
-      id: newUser.id,
-      email: newUser.email,
-      name: `${newUser.firstName} ${newUser.lastName}`,
-      role: newUser.role,
-    }), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7 días
-      path: '/',
+    // Seguimos emitiendo el auth_token propio para compatibilidad con guards actuales
+    setAuthCookie(response, {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      vendorId: user.vendor_id,
     });
 
     return response;
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Register error:', error);
     return NextResponse.json(
       { message: 'Internal server error' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
