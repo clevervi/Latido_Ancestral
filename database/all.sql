@@ -3,6 +3,16 @@
 -- Fecha de consolidación: 2025
 -- ==================================================================================
 
+-- NOTA PARA SUPABASE
+-- Este script está pensado para ejecutarse directamente sobre la base de datos
+-- del proyecto de Supabase (generalmente llamada "postgres") usando el SQL Editor.
+-- No crea la base de datos, solo el esquema y algunos datos de ejemplo.
+-- Asegúrate de:
+--   1) Ejecutarlo en el schema "public" (valor por defecto en Supabase).
+--   2) Tener habilitadas las extensiones indicadas más abajo (Supabase las soporta).
+--   3) Revisar o eliminar los datos de ejemplo (usuarios, productos, cupones)
+--      si vas a trabajar con datos reales en producción.
+
 -- ============================================
 -- 1. CONFIGURACIÓN INICIAL Y EXTENSIONES
 -- ============================================
@@ -775,6 +785,117 @@ FROM categorias c WHERE c.slug = 'mochilas-wayuu';
 -- Cupones
 INSERT INTO cupones (code, type, discount_value, min_purchase_amount, starts_at, expires_at)
 VALUES ('BIENVENIDA10', 'percentage', 10, 50000, NOW(), NOW() + INTERVAL '90 days');
+
+-- ============================================
+-- 10. ROW LEVEL SECURITY (RLS) PARA SUPABASE (OPCIONAL)
+-- ============================================
+
+-- NOTA:
+-- Estas políticas están pensadas para usarse cuando la aplicación se conecta a
+-- través del cliente de Supabase (supabase-js) con JWT de usuario. Las
+-- conexiones directas desde el backend usando el rol "postgres" (supersuario)
+-- no se verán afectadas por RLS.
+-- Si aún no vas a usar Supabase Auth + RLS puedes comentar o eliminar esta
+-- sección antes de ejecutar el script.
+
+-- Habilitar RLS en tablas clave
+ALTER TABLE public.usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pedidos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.cupones_usuarios ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.direcciones ENABLE ROW LEVEL SECURITY;
+
+-- Usuarios: cada usuario ve/actualiza solo su propio perfil
+CREATE POLICY "usuarios_all_service_role"
+ON public.usuarios
+FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "usuarios_select_self"
+ON public.usuarios
+FOR SELECT
+USING (id = auth.uid());
+
+CREATE POLICY "usuarios_update_self"
+ON public.usuarios
+FOR UPDATE
+USING (id = auth.uid())
+WITH CHECK (id = auth.uid());
+
+-- Wishlist: solo dueño puede ver/modificar
+CREATE POLICY "wishlist_all_service_role"
+ON public.wishlist
+FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "wishlist_select_own"
+ON public.wishlist
+FOR SELECT
+USING (usuario_id = auth.uid());
+
+CREATE POLICY "wishlist_insert_own"
+ON public.wishlist
+FOR INSERT
+WITH CHECK (usuario_id = auth.uid());
+
+CREATE POLICY "wishlist_delete_own"
+ON public.wishlist
+FOR DELETE
+USING (usuario_id = auth.uid());
+
+-- Direcciones: solo dueño puede ver/modificar
+CREATE POLICY "direcciones_all_service_role"
+ON public.direcciones
+FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "direcciones_select_own"
+ON public.direcciones
+FOR SELECT
+USING (usuario_id = auth.uid());
+
+CREATE POLICY "direcciones_insert_own"
+ON public.direcciones
+FOR INSERT
+WITH CHECK (usuario_id = auth.uid());
+
+CREATE POLICY "direcciones_update_own"
+ON public.direcciones
+FOR UPDATE
+USING (usuario_id = auth.uid())
+WITH CHECK (usuario_id = auth.uid());
+
+CREATE POLICY "direcciones_delete_own"
+ON public.direcciones
+FOR DELETE
+USING (usuario_id = auth.uid());
+
+-- Pedidos: clientes solo ven sus propios pedidos (admin/service_role se maneja por backend)
+CREATE POLICY "pedidos_all_service_role"
+ON public.pedidos
+FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "pedidos_select_own"
+ON public.pedidos
+FOR SELECT
+USING (usuario_id = auth.uid());
+
+-- Cupones_usuarios: solo ver usos propios
+CREATE POLICY "cupones_usuarios_all_service_role"
+ON public.cupones_usuarios
+FOR ALL
+USING (auth.role() = 'service_role')
+WITH CHECK (auth.role() = 'service_role');
+
+CREATE POLICY "cupones_usuarios_select_own"
+ON public.cupones_usuarios
+FOR SELECT
+USING (usuario_id = auth.uid());
 
 -- ============================================
 -- FIN DEL SCRIPT
