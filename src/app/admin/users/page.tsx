@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { FaEdit, FaTrash, FaPlus, FaSearch } from 'react-icons/fa';
 import { useNotificationStore } from '@/store/notificationStore';
+const isLoading = false;
 
 interface User {
   id: number;
